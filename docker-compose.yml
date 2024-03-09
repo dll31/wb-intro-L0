@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  nats-streaming:
+    image: nats-streaming:latest
+    restart: always
+    command: -p 4222 -m 8222 -dir data -store file --debug=true --trace=true
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    
+    volumes:
+      - ./_nats_data:/data
