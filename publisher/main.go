@@ -36,7 +36,7 @@ func main() {
 
 	clientID, exists = os.LookupEnv("CLIENT_ID_PUB")
 	if !exists {
-		clientID = "PUB"
+		clientID = "pub"
 	}
 
 	subj, exists = os.LookupEnv("CHANNEL")
@@ -61,7 +61,8 @@ func main() {
 	}
 
 	m.FillId(model.MakeRandomId())
+	// fmt.Printf("Send message with data: %v", m)
 
-	sc.Publish(subj, []byte(m.ToBytes()))
+	sc.Publish(subj, m.ToBytes())
 
 }
