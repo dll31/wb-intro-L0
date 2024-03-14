@@ -23,13 +23,12 @@ func ReadFromFile(filename string) (body []byte, err error) {
 		log.Fatalf("unable to read file: %v", err)
 		body = make([]byte, 0)
 	}
-	// fmt.Println(string(body))
+
 	return
 }
 
 func (m *Model) Unmarshal(body *[]byte) (err error) {
 	if err = json.Unmarshal(*body, &m.Fields); err != nil {
-		log.Panic(err)
 		return
 	}
 
@@ -37,9 +36,6 @@ func (m *Model) Unmarshal(body *[]byte) (err error) {
 		m.Id = string(n)
 	}
 
-	delete(m.Fields, "order_uid")
-
-	// fmt.Printf("%+v", m)
 	return
 }
 
@@ -53,11 +49,27 @@ func MakeRandomId() string {
 	return string(b)
 }
 
+func (m *Model) ApplyIdFromFields() (ok bool) {
+	n, ok := m.Fields["order_uid"].(string)
+	if !ok {
+		log.Printf("Cannot apply id\n")
+		return
+	}
+	m.Id = string(n)
+	delete(m.Fields, "order_uid")
+	return
+}
+
 func (m *Model) FillId(id string) {
 	m.Id = id
+	m.Fields["order_uid"] = id
 }
 
 func (m *Model) ToBytes() (buffer []byte) {
-	buffer = []byte(fmt.Sprintf("%v", m))
+	buffer, err := json.Marshal(m.Fields)
+	if err != nil {
+		fmt.Println("Cannot marshal model")
+	}
+
 	return
 }
