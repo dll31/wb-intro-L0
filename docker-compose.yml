@@ -11,3 +11,23 @@ services:
     
     volumes:
       - ./_nats_data:/data
+  
+  postgres:
+    image: postgres:16.2
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      PGDATABASE: ${POSTGRES_DB}
+      PGUSER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - ./db/db-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
+# volumes:
+#   ./db/db-data:
