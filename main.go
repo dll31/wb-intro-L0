@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"wb-intro-l0/cache"
 	postgres "wb-intro-l0/db/postgres"
 	"wb-intro-l0/model"
 
@@ -33,6 +34,8 @@ func main() {
 	var p postgres.Postgres
 	p.NewPool(postgres.NewDb())
 	defer p.ClosePool()
+
+	c := cache.New()
 
 	URL, exists := os.LookupEnv("URL")
 	if !exists {
@@ -86,8 +89,10 @@ func main() {
 			return
 		}
 
-		p.Insert(&m)
-
+		err := p.Insert(&m)
+		if err == nil {
+			c.Set(m.Id, m.Fields)
+		}
 	}
 
 	sub, err := sc.QueueSubscribe(subj, qgroup, mcb, stan.DurableName(durable), stan.DeliverAllAvailable())
