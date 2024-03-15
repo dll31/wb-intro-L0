@@ -1,15 +1,13 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	postgres "wb-intro-l0/db/postgres"
 	"wb-intro-l0/model"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	stan "github.com/nats-io/stan.go"
 )
@@ -32,20 +30,9 @@ func main() {
 		qgroup              string
 	)
 
-	username, _ := os.LookupEnv("POSTGRES_USER")
-	password, _ := os.LookupEnv("PGPASSWORD")
-	host, _ := os.LookupEnv("POSTGRES_HOST")
-	port, _ := os.LookupEnv("POSTGRES_PORT")
-	dbName, _ := os.LookupEnv("POSTGRES_DB")
-
-	connString := "postgres://" + username + ":" + password + "@" + host + ":" + port + "/" + dbName
-
-	dbpool, err := pgxpool.New(context.Background(), connString)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
-		os.Exit(1)
-	}
-	defer dbpool.Close()
+	var p postgres.Postgres
+	p.NewPool(postgres.NewDb())
+	defer p.ClosePool()
 
 	URL, exists := os.LookupEnv("URL")
 	if !exists {
@@ -99,7 +86,7 @@ func main() {
 			return
 		}
 
-		insertIntoDb(dbpool, dbName, &m)
+		p.Insert(&m)
 
 	}
 
@@ -133,28 +120,3 @@ func main() {
 func printMsg(m *stan.Msg, i int) {
 	log.Printf("[#%d] Received: %v\n\n", i, m)
 }
-
-func insertIntoDb(conn *pgxpool.Pool, dbName string, m *model.Model) {
-	insertString := fmt.Sprintf("INSERT INTO %s (order_uid, order_data) VALUES ", dbName)
-	jsonFields, err := json.Marshal(m.Fields)
-	if err != nil {
-		log.Println("Cannot marshal fields in insert")
-		return
-	}
-	_, err = conn.Exec(context.Background(), (insertString + "($1, $2)"), m.Id, jsonFields)
-
-	if err != nil {
-		log.Printf("Cannot insert into db. Error: %s\n", err)
-	}
-}
-
-// func selectFromDb(conn *pgxpool.Pool, m *model.Model) {
-// 	selectString := "SELECT order_uid, order_data FROM "
-// 	row := conn.QueryRow(context.Background(), selectString)
-// 	var jsonFields []byte
-// 	row.Scan(m.Id, jsonFields)
-// 	err := m.Unmarshal(&jsonFields)
-// 	if err != nil {
-// 		log.Println("Cannot unmarshal in select from db")
-// 	}
-// }
