@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+<div>
+  <form method="POST" action="/">     
+      <label>Enter order id:</label><input name="id" type="text" required />
+      <input type="submit" value="Get order info" />
+  </form>
+</div>
+<div>
+  <label>JSON Output:</label><br>
+  <code><pre>{{ . }}</pre></code>
+</div>
+</body>
+</html>
+
+
+<!-- <form action="" method="get" class="form-example">
+    <div class="form-example">
+      <label for="name"> </label>
+      <input type="text" name="name" id="name" required />
+    </div>
+    <div class="form-example">
+      <input type="submit" value="Get order info" />
+    </div>
+  </form> -->
