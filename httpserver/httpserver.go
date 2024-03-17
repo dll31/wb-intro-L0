@@ -1,14 +1,16 @@
-package server
+package httpserver
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"time"
+	"wb-intro-l0/cache"
 )
 
 type Order struct {
@@ -21,9 +23,10 @@ type Server struct {
 	page   string
 	tmpl   *template.Template
 	server http.Server
+	c      *cache.Cache
 }
 
-func New() *Server {
+func New(c *cache.Cache) *Server {
 	addr, exists := os.LookupEnv("SERVER_ADDR")
 	if !exists {
 		addr = ":8080"
@@ -31,7 +34,7 @@ func New() *Server {
 
 	page, exists := os.LookupEnv("SERVER_PAGE")
 	if !exists {
-		page = "index.html"
+		page = "httpserver/index.html"
 	}
 
 	tmpl := template.Must(template.ParseFiles(page))
@@ -41,6 +44,7 @@ func New() *Server {
 		page:   page,
 		tmpl:   tmpl,
 		server: http.Server{Addr: addr},
+		c:      c,
 	}
 }
 
@@ -62,9 +66,9 @@ func (s *Server) RequestHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		id := r.Form.Get("id")
+		fields := s.c.Get(id)
 
-		order := Order{ID: id, Status: "processed"}
-		jsonResponse, err := json.Marshal(order)
+		jsonResponse, err := json.Marshal(fields)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -86,7 +90,9 @@ func (s *Server) RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Serve() {
 	http.HandleFunc("/", s.RequestHandler)
-	http.ListenAndServe(s.addr, nil)
+	if err := s.server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("HTTP server error: %v", err)
+	}
 }
 
 func (s *Server) Shutdown() {
