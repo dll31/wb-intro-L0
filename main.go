@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"wb-intro-l0/cache"
 	postgres "wb-intro-l0/db/postgres"
+	"wb-intro-l0/httpserver"
 	"wb-intro-l0/model"
 
 	"github.com/joho/godotenv"
@@ -36,6 +37,10 @@ func main() {
 	defer p.ClosePool()
 
 	c := cache.New()
+
+	s := httpserver.New(c)
+	go s.Serve()
+	defer s.Shutdown()
 
 	URL, exists := os.LookupEnv("URL")
 	if !exists {

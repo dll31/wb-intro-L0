@@ -27,7 +27,7 @@ services:
       - ./db:/docker-entrypoint-initdb.d
       - ./db/db-data:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - "${POSTGRES_PORT}:5432"
 
 # volumes:
 #   ./db/db-data:
