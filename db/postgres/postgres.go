@@ -90,6 +90,36 @@ func (p *Postgres) Insert(data *model.Model) (err error) {
 	return
 }
 
+func (p *Postgres) selectLastNRows(n int) (data map[string]interface{}) {
+
+	data = make(map[string]interface{}, n)
+
+	rows, err := p.Pool.Query(context.Background(), "SELECT * FROM orders ORDER BY id DESC LIMIT $1", n)
+	if err != nil {
+		log.Fatalf("Error querying database: %v\n", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var orderUid string
+		var orderData map[string]interface{}
+
+		if err := rows.Scan(&id, &orderUid, &orderData); err != nil {
+			log.Fatalf("Error scanning row: %v\n", err)
+		}
+
+		fmt.Printf("ID: %d, OrderUid: %s, OrderData: %v\n", id, orderUid, orderData)
+		data[orderUid] = orderData
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatalf("Error iterating over rows: %v\n", err)
+	}
+
+	return data
+}
+
 // func selectFromDb(conn *pgxpool.Pool, m *model.Model) {
 // 	selectString := "SELECT order_uid, order_data FROM "
 // 	row := conn.QueryRow(context.Background(), selectString)

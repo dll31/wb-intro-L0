@@ -55,6 +55,9 @@ func main() {
 	postgr.NewPool(postgres.NewDb())
 	c = cache.New()
 
+	//Cache recovering
+	// ...
+
 	server = httpserver.New(c)
 	go server.Serve()
 
