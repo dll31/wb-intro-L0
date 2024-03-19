@@ -90,7 +90,7 @@ func (p *Postgres) Insert(data *model.Model) (err error) {
 	return
 }
 
-func (p *Postgres) selectLastNRows(n int) (data map[string]interface{}) {
+func (p *Postgres) SelectLastNRows(n int) (data map[string]interface{}) {
 
 	data = make(map[string]interface{}, n)
 
