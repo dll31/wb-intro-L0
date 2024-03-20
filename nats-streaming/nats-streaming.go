@@ -62,10 +62,9 @@ func New() *NatsStreaming {
 
 func (ns *NatsStreaming) CreateConnection() error {
 	var err error
-	ns.conn, err = stan.Connect(ns.clusterID, ns.clientID, stan.NatsURL(ns.URL),
-		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-			log.Fatalf("Connection lost, reason: %v", reason)
-		}))
+	ns.conn, err = stan.Connect(ns.clusterID, ns.clientID, stan.NatsURL(ns.URL), stan.Pings(2, 2), stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+		log.Fatalf("Connection lost, reason: %v", reason)
+	}))
 	if err != nil {
 		log.Fatalf("Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, ns.URL)
 		return err

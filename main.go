@@ -96,6 +96,7 @@ func main() {
 				for key, value := range recCache {
 					c.Set(key, value)
 				}
+				message_counter = int(cacheLen)
 			}
 
 		}

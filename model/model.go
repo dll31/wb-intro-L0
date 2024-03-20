@@ -56,7 +56,7 @@ func (m *Model) ApplyIdFromFields() (ok bool) {
 		return
 	}
 	m.Id = string(n)
-	delete(m.Fields, "order_uid")
+	// delete(m.Fields, "order_uid")
 	return
 }
 
